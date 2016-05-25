@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+CPI_BIN_DIR=/var/vcap/packages/bosh_aws_cpi/bin/
+RUN_DIR=/var/vcap/sys/run/meta_cpi
+PID_FILE=${RUN_DIR}/cpi.pid
+
+case $1 in
+
+  start)
+    mkdir -p $RUN_DIR
+    echo 1 > $PID_FILE
+  ;;
+
+  stop)
+    rm -f $SUDOERS_FILE
+    rm -f $PID_FILE
+  ;;
+
+esac
+exit 0

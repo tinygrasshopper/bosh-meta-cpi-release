@@ -1,0 +1,42 @@
+# abort script on any command that exits with a non zero value
+set -e
+
+tar xzf meta_cpi/yaml-0.1.5.tar.gz
+(
+  set -e
+  cd yaml-0.1.5
+  CFLAGS='-fPIC' ./configure --prefix=${BOSH_INSTALL_TARGET} --disable-shared
+  make
+  make install
+)
+if [[ $? != 0 ]] ; then
+  echo "Cannot install yaml"
+  exit 1
+fi
+
+tar xzf meta_cpi/ruby-2.2.4.tar.gz
+(
+  set -e
+  cd ruby-2.2.4
+  LDFLAGS="-Wl,-rpath -Wl,${BOSH_INSTALL_TARGET}" CFLAGS='-fPIC' ./configure --prefix=${BOSH_INSTALL_TARGET} --disable-install-doc --with-opt-dir=/usr/local/opt/openssl:${BOSH_INSTALL_TARGET}
+  make
+  make install
+)
+if [[ $? != 0 ]] ; then
+  echo "Cannot install ruby"
+  exit 1
+fi
+
+tar zxvf meta_cpi/rubygems-2.6.2.tgz
+(
+  set -e
+  cd rubygems-2.6.2
+
+  ${BOSH_INSTALL_TARGET}/bin/ruby setup.rb
+)
+if [[ $? != 0 ]] ; then
+  echo "Cannot install rubygems"
+  exit 1
+fi
+
+${BOSH_INSTALL_TARGET}/bin/gem install meta_cpi/bundler-1.11.2.gem --local --no-ri --no-rdoc

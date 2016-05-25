@@ -1,0 +1,7 @@
+---
+name: meta_cpi
+templates:
+  cpi_ctl.erb: bin/cpi_ctl
+  cpi.erb: bin/cpi
+
+packages:
