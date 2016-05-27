@@ -5,3 +5,6 @@ require 'yaml'
 require 'ostruct'
 require 'bosh/cpi'
 require 'cloud/aws'
+
+input = STDIN.read
+puts `echo {input} | /var/vcap/jobs/aws_cpi/bin/cpi`

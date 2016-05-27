@@ -2,9 +2,11 @@
 name: meta_cpi
 
 dependencies:
+- ruby_for_meta_cpi
 
 files:
-- meta_cpi/yaml-0.1.5.tar.gz
-- meta_cpi/ruby-2.2.4.tar.gz
-- meta_cpi/rubygems-2.6.2.tgz
-- meta_cpi/bundler-1.11.2.gem
+- meta_cpi/Gemfile
+- meta_cpi/Gemfile.lock
+- meta_cpi/bin/**/*
+- meta_cpi/lib/**/*
+- meta_cpi/vendor/**/*

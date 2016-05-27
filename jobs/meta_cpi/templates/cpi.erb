@@ -6,10 +6,10 @@ BOSH_JOBS_DIR=${BOSH_JOBS_DIR:-/var/vcap/jobs}
 
 export BUNDLE_GEMFILE=$BOSH_PACKAGES_DIR/meta_cpi/Gemfile
 
-bundle_cmd="$BOSH_PACKAGES_DIR/meta_cpi/bin/bundle"
+bundle_cmd="$BOSH_PACKAGES_DIR/ruby_for_meta_cpi/bin/bundle"
 
 
 read INPUT
-echo $INPUT | $bundle_cmd exec $BOSH_PACKAGES_DIR/meta_cpi/bin/aws_cpi
+echo $INPUT | $bundle_cmd exec $BOSH_PACKAGES_DIR/meta_cpi/bin/meta_cpi
 
 exit 0
