@@ -5,3 +5,5 @@ templates:
   cpi.erb: bin/cpi
 
 packages:
+- meta_cpi
+- ruby_for_meta_cpi

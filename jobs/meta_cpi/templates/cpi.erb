@@ -8,7 +8,9 @@ export BUNDLE_GEMFILE=$BOSH_PACKAGES_DIR/meta_cpi/Gemfile
 
 bundle_cmd="$BOSH_PACKAGES_DIR/ruby_for_meta_cpi/bin/bundle"
 
+export BUNDLE_CACHE_PATH="vendor/package"
 
+$bundle_cmd install
 read INPUT
 echo $INPUT | $bundle_cmd exec $BOSH_PACKAGES_DIR/meta_cpi/bin/meta_cpi
 
