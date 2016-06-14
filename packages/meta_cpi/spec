@@ -9,4 +9,4 @@ files:
 - meta_cpi/Gemfile.lock
 - meta_cpi/bin/**/*
 - meta_cpi/lib/**/*
-- meta_cpi/vendor/**/*
+- meta_cpi/vendor/package/**/*

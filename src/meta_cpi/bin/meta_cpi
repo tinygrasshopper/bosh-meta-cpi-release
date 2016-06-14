@@ -4,7 +4,10 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'yaml'
 require 'ostruct'
 require 'bosh/cpi'
-require 'cloud/aws'
+require 'pry'
 
+job_dir = ENV['BOSH_JOBS_DIR'] || "/var/vcap/jobs"
+
+# binding.pry
 input = STDIN.read
-puts `echo {input} | /var/vcap/jobs/meta_cpi/bin/cpi`
+puts `echo "#{input}" | #{job_dir}/aws_cpi/bin/cpi`
