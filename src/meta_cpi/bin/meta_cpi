@@ -7,4 +7,5 @@ require 'bosh/cpi'
 require 'cloud/aws'
 
 input = STDIN.read
+puts `echo {input} >> /tmp/meta.log`
 puts `echo {input} | /var/vcap/jobs/meta_cpi/bin/cpi`

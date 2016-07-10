@@ -1,4 +1,4 @@
-check process cpi
+check process meta_cpi
   with pidfile /var/vcap/sys/run/meta_cpi/cpi.pid
   start program "/var/vcap/jobs/meta_cpi/bin/cpi_ctl start"
   stop program "/var/vcap/jobs/meta_cpi/bin/cpi_ctl stop"

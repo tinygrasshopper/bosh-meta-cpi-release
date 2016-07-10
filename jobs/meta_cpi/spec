@@ -7,3 +7,6 @@ templates:
 packages:
 - meta_cpi
 - ruby_for_meta_cpi
+
+
+properties: {}
