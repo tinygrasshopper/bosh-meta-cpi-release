@@ -2,7 +2,6 @@
 
 set -e
 
-CPI_BIN_DIR=/var/vcap/packages/bosh_aws_cpi/bin/
 RUN_DIR=/var/vcap/sys/run/meta_cpi
 PID_FILE=${RUN_DIR}/cpi.pid
 
@@ -14,7 +13,6 @@ case $1 in
   ;;
 
   stop)
-    rm -f $SUDOERS_FILE
     rm -f $PID_FILE
   ;;
 
