@@ -4,7 +4,12 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'yaml'
 require 'ostruct'
 require 'bosh/cpi'
+require 'meta_cpi'
 
-input = STDIN.read
-`echo '#{input}' >> /tmp/meta.log`
-puts `echo '#{input}' | env -i /var/vcap/jobs/aws_cpi/bin/cpi`
+cpi = MetaCPI.new(log_file: '/tmp/meta.log',
+                  default_cpi: :aws,
+                  available_cpis: {
+                    aws: '/var/vcap/jobs/aws_cpi/bin/cpi',
+                    warden: '/var/vcap/jobs/warden_cpi/bin/cpi'
+                  })
+puts cpi.run(STDIN.read)

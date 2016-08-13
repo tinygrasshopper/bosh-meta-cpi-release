@@ -8,6 +8,7 @@ GEM
       bosh_common (~> 1.3232.0)
       logging (~> 1.8.2)
       membrane (~> 1.1.0)
+    diff-lcs (1.2.5)
     httpclient (2.7.1)
     little-plugger (1.1.4)
     logging (1.8.2)
@@ -15,6 +16,19 @@ GEM
       multi_json (>= 1.8.4)
     membrane (1.1.0)
     multi_json (1.12.1)
+    rspec (3.5.0)
+      rspec-core (~> 3.5.0)
+      rspec-expectations (~> 3.5.0)
+      rspec-mocks (~> 3.5.0)
+    rspec-core (3.5.2)
+      rspec-support (~> 3.5.0)
+    rspec-expectations (3.5.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.5.0)
+    rspec-mocks (3.5.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.5.0)
+    rspec-support (3.5.0)
     semi_semantic (1.1.0)
 
 PLATFORMS
@@ -24,6 +38,7 @@ DEPENDENCIES
   bosh_common
   bosh_cpi
   httpclient
+  rspec
 
 BUNDLED WITH
    1.11.2
