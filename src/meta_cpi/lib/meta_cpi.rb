@@ -6,15 +6,16 @@ class MetaCPI
   end
 
   def run(input)
+    log "INPUT: #{input}"
     cpi_request = JSON.parse(input)
     method = cpi_request["method"].to_sym
     parameters = cpi_request["arguments"]
-    if self.respond_to?(:method)
+    if self.respond_to?(method, true)
       self.send(method, parameters, input)
     else
       exec_with_cpi(default_cpi, input)
     end
-  rescue  => e
+  rescue => e
     e.to_s
   end
 
@@ -23,9 +24,6 @@ class MetaCPI
   def create_stemcell(parameters, input)
     exec_with_cpi(cpi_for(parameters[1]["infrastructure"].to_sym), input)
   end
-
-  
-
 
   def default_cpi
     cpi_for(@params[:default_cpi])
@@ -69,7 +67,6 @@ class MetaCPI
 
   def exec_with_cpi(cpi, input)
     log "USING CPI: #{cpi}"
-    log "INPUT: #{input}"
     output = `echo '#{input}' | env -i #{cpi}`
     log "OUTPUT: #{output}"
     output

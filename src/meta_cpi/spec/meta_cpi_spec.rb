@@ -58,4 +58,21 @@ describe MetaCPI do
       end
     end
   end
+
+  context 'delete stemcells' do
+    context 'calls the default_cpi' do
+      let(:aws_cpi) { MockExecutable.new("aws_cpi_output") }
+      let(:available_cpis) { {aws: aws_cpi.path} }
+      after(:each) do
+        aws_cpi.cleanup
+      end
+      it 'returns an error' do
+        cmd = '{"method":"delete_vm","arguments":["i-01991d265a8cff981"],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+        output = subject.run(cmd)
+
+        expect(aws_cpi.called_with.strip).to eq(cmd)
+        expect(output.strip).to eq('aws_cpi_output')
+      end
+    end
+  end
 end
