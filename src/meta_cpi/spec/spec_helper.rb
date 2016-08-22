@@ -1,3 +1,4 @@
+require_relative '../lib/cloud_id'
 require_relative '../lib/meta_cpi'
 require 'tempfile'
 require 'json'
@@ -9,7 +10,7 @@ class MockExecutable
     @executable_file.write("#!/usr/bin/env bash
 read input
 echo $input > #{@capture_file.path}
-echo #{expected_return_value}
+echo '#{expected_return_value}'
 ")
   @executable_file.close
   File.chmod(0744,@executable_file.path)

@@ -3,26 +3,34 @@ require 'json'
 class MetaCPI
   def initialize(params)
     @params = params
+    @repository = CloudIDRepository.new(params[:state_file])
   end
 
   def run(input)
-    log "INPUT: #{input}"
+    log "META INPUT: #{input}"
     cpi_request = JSON.parse(input)
     method = cpi_request["method"].to_sym
     parameters = cpi_request["arguments"]
-    if self.respond_to?(method, true)
+    output = if self.respond_to?(method, true)
       self.send(method, parameters, input)
     else
       exec_with_cpi(default_cpi, input)
     end
+    log "META OUTPUT: #{output}"
+    output
   rescue => e
+    log "META OUTPUT ERROR: #{e.to_s}"
     e.to_s
   end
 
   private
 
   def create_stemcell(parameters, input)
-    exec_with_cpi(cpi_for(parameters[1]["infrastructure"].to_sym), input)
+    cpi = parameters[1]["infrastructure"].to_sym
+    output = exec_with_cpi(cpi_for(cpi), input)
+    parsed_json = JSON.parse(output)
+    @repository.append({"id" => parsed_json["result"], "type" => CloudIDType::STEMCELL, "cpi" => cpi})
+    output
   end
 
   def default_cpi
@@ -67,8 +75,9 @@ class MetaCPI
 
   def exec_with_cpi(cpi, input)
     log "USING CPI: #{cpi}"
+    log "CPI INPUT: #{input}"
     output = `echo '#{input}' | env -i #{cpi}`
-    log "OUTPUT: #{output}"
+    log "CPI OUTPUT: #{output}"
     output
   end
 end
