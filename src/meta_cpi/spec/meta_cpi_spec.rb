@@ -35,16 +35,24 @@ describe MetaCPI do
         puts state_file.path
         expect(JSON.parse(state_file.read)).to eq([{"id" => "c3be6b65-3b01-4d22-77df-5cce09aa3d0c", "type" => "stemcell", "cpi" => "aws"}])
       end
-      context "error uploading stemcell" do
-        it "dosen't save the id" do
-          
-        end
+    end
+
+    context "error uploading stemcell" do
+      let(:aws_cpi) { MockExecutable.new('{"result":"c3be6b65-3b01-4d22-77df-5cce09aa3d0c","error":"some error","log":""}') }
+
+      it "dosen't save the id" do
+        cmd = '{"method":"create_stemcell","arguments":["/var/vcap/data/tmp/director/stemcell20160811-8042-j83kkx/image",{"name":"bosh-aws-xen-hvm-ubuntu-trusty-go_agent","version":"3262.5","infrastructure":"aws","hypervisor":"xen","disk":3072,"disk_format":"raw","container_format":"bare","os_type":"linux","os_distro":"ubuntu","architecture":"x86_64","root_device_name":"/dev/sda1","ami":{"eu-central-1":"ami-e16c9b8e","sa-east-1":"ami-b92eb9d5","ap-northeast-1":"ami-4e9f592f","us-west-1":"ami-eae7a78a","eu-west-1":"ami-636a0310","us-west-2":"ami-20559c40","ap-northeast-2":"ami-4a21eb24","ap-southeast-1":"ami-99cc12fa","ap-southeast-2":"ami-c16450a2","us-east-1":"ami-3b2cbf2c"}}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+        output = subject.run(cmd)
+
+        expect(state_file.read).to eq("")
       end
     end
 
+
     context 'warden stemcell' do
+      let(:warden_cpi_output){'{"result":"i-0fce66f99336acfd3","error":null,"log":""}'}
       let(:aws_cpi) { MockExecutable.new("aws_cpi_output") }
-      let(:warden_cpi) { MockExecutable.new("warden_cpi_output") }
+      let(:warden_cpi) { MockExecutable.new(warden_cpi_output) }
       let(:available_cpis) { {aws: aws_cpi.path, warden: warden_cpi.path} }
       after(:each) do
         aws_cpi.cleanup
@@ -55,7 +63,7 @@ describe MetaCPI do
         output = subject.run(cmd)
 
         expect(warden_cpi.called_with.strip).to eq(cmd)
-        expect(output.strip).to eq("warden_cpi_output")
+        expect(output.strip).to eq(warden_cpi_output)
       end
     end
 

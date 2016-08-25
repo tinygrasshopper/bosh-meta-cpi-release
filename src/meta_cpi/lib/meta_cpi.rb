@@ -29,7 +29,9 @@ class MetaCPI
     cpi = parameters[1]["infrastructure"].to_sym
     output = exec_with_cpi(cpi_for(cpi), input)
     parsed_json = JSON.parse(output)
-    @repository.append({"id" => parsed_json["result"], "type" => CloudIDType::STEMCELL, "cpi" => cpi})
+    if parsed_json["error"] == nil
+      @repository.append({"id" => parsed_json["result"], "type" => CloudIDType::STEMCELL, "cpi" => cpi})
+    end
     output
   end
 
