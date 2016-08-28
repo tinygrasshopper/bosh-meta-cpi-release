@@ -85,31 +85,30 @@ describe MetaCPI do
 
   context 'create_vm' do
     context 'networks' do
-      let(:aws_cpi) { MockExecutable.new('') }
+      let(:azure_cpi) { MockExecutable.new('') }
       let(:warden_cpi) { MockExecutable.new("") }
-      let(:available_cpis) { {aws: aws_cpi.path, warden: warden_cpi.path} }
+      let(:available_cpis) { {azure: azure_cpi.path, warden: warden_cpi.path} }
       after(:each) do
-        aws_cpi.cleanup
+        azure_cpi.cleanup
       end
 
       it 'assigns the dynamic network config for the cpi' do
-        aws_cpi.returns('{"result":"ami-83c8bef0","error":null,"log":""}')
-        cmd = '{"method":"create_stemcell","arguments":["/var/vcap/data/tmp/director/stemcell20160811-8042-j83kkx/image",{"name":"bosh-aws-xen-hvm-ubuntu-trusty-go_agent","version":"3262.5","infrastructure":"aws","hypervisor":"xen","disk":3072,"disk_format":"raw","container_format":"bare","os_type":"linux","os_distro":"ubuntu","architecture":"x86_64","root_device_name":"/dev/sda1","ami":{"eu-central-1":"ami-e16c9b8e","sa-east-1":"ami-b92eb9d5","ap-northeast-1":"ami-4e9f592f","us-west-1":"ami-eae7a78a","eu-west-1":"ami-636a0310","us-west-2":"ami-20559c40","ap-northeast-2":"ami-4a21eb24","ap-southeast-1":"ami-99cc12fa","ap-southeast-2":"ami-c16450a2","us-east-1":"ami-3b2cbf2c"}}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+        azure_cpi.returns('{"result":"ami-83c8bef0","error":null,"log":""}')
+        cmd = '{"method":"create_stemcell","arguments":["/var/vcap/data/tmp/director/stemcell20160811-8042-j83kkx/image",{"name":"bosh-azure-xen-hvm-ubuntu-trusty-go_agent","version":"3262.5","infrastructure":"azure","hypervisor":"xen","disk":3072,"disk_format":"raw","container_format":"bare","os_type":"linux","os_distro":"ubuntu","architecture":"x86_64","root_device_name":"/dev/sda1","ami":{"eu-central-1":"ami-e16c9b8e","sa-east-1":"ami-b92eb9d5","ap-northeast-1":"ami-4e9f592f","us-west-1":"ami-eae7a78a","eu-west-1":"ami-636a0310","us-west-2":"ami-20559c40","ap-northeast-2":"ami-4a21eb24","ap-southeast-1":"ami-99cc12fa","ap-southeast-2":"ami-c16450a2","us-east-1":"ami-3b2cbf2c"}}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
         output = subject.run(cmd)
         expect(output.strip).to eq('{"result":"ami-83c8bef0","error":null,"log":""}')
 
-        cmd = '{"method":"create_vm","arguments":["c712902c-a3f0-4768-a392-13ed1389aff8","ami-83c8bef0",{"cloud_provider":"aws","instance_type":"t2.micro","ephemeral_disk":{"size":3000,"type":"gp2"}},{"compilation":{"type":"dynamic","cloud_properties":{"meta":{"aws":{"dns":["10.0.16.2"],"subnet":"subnet-bb1884df"}}},"default":["dns","gateway"]}},[],{}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
-        aws_cpi.returns('{"result":"i-0fce66f99336acfd3","error":null,"log":""}')
+        cmd = '{"method":"create_vm","arguments":["c712902c-a3f0-4768-a392-13ed1389aff8","ami-83c8bef0",{"instance_type":"t2.micro","ephemeral_disk":{"size":3000,"type":"gp2"}},{"compilation":{"type":"dynamic","cloud_properties":{"meta":{"azure":{"dns":["10.0.16.2"],"subnet":"subnet-bb1884df"}}},"default":["dns","gateway"]}},[],{}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+        azure_cpi.returns('{"result":"i-0fce66f99336acfd3","error":null,"log":""}')
 
         output = subject.run(cmd)
         expect(output.strip).to eq('{"result":"i-0fce66f99336acfd3","error":null,"log":""}')
-        expect(JSON.parse(aws_cpi.called_with)).to eq({
+        expect(JSON.parse(azure_cpi.called_with)).to eq({
           "method"=>"create_vm",
           "arguments"=> [
             "c712902c-a3f0-4768-a392-13ed1389aff8",
             "ami-83c8bef0",
-            {"cloud_provider"=>"aws",
-             "instance_type"=>"t2.micro",
+            {"instance_type"=>"t2.micro",
              "ephemeral_disk"=>{"size"=>3000, "type"=>"gp2"}
             },
             {"compilation"=>
@@ -118,7 +117,7 @@ describe MetaCPI do
                "cloud_properties"=>
                  {"dns"=>["10.0.16.2"],
                   "subnet"=>"subnet-bb1884df",
-                  "meta"=>{"aws"=>{"dns"=>["10.0.16.2"],
+                  "meta"=>{"azure"=>{"dns"=>["10.0.16.2"],
                                    "subnet"=>"subnet-bb1884df"}
                           }
                  },
@@ -129,10 +128,73 @@ describe MetaCPI do
             {}], "context"=>{"director_uuid"=>"a5124231-2459-4774-b27e-3c45d3d5bb49"}})
 
         expect(JSON.parse(state_file.read)).to eq([
-          {"id" => "ami-83c8bef0", "type" => "stemcell", "cpi" => "aws"},
-          {"id" => "i-0fce66f99336acfd3", "type" => "vm", "cpi" => "aws"}
+          {"id" => "ami-83c8bef0", "type" => "stemcell", "cpi" => "azure"},
+          {"id" => "i-0fce66f99336acfd3", "type" => "vm", "cpi" => "azure"}
         ])
       end
+    end
+  end
+  context 'set_vm_metadata' do
+    let(:azure_cpi) { MockExecutable.new('') }
+    let(:warden_cpi) { MockExecutable.new("") }
+    let(:available_cpis) { {azure: azure_cpi.path, warden: warden_cpi.path} }
+    after(:each) do
+      azure_cpi.cleanup
+    end
+
+    it 'assigns the dynamic network config for the cpi' do
+      azure_cpi.returns('{"result":"ami-83c8bef0","error":null,"log":""}')
+      cmd = '{"method":"create_stemcell","arguments":["/var/vcap/data/tmp/director/stemcell20160811-8042-j83kkx/image",{"name":"bosh-azure-xen-hvm-ubuntu-trusty-go_agent","version":"3262.5","infrastructure":"azure","hypervisor":"xen","disk":3072,"disk_format":"raw","container_format":"bare","os_type":"linux","os_distro":"ubuntu","architecture":"x86_64","root_device_name":"/dev/sda1","ami":{"eu-central-1":"ami-e16c9b8e","sa-east-1":"ami-b92eb9d5","ap-northeast-1":"ami-4e9f592f","us-west-1":"ami-eae7a78a","eu-west-1":"ami-636a0310","us-west-2":"ami-20559c40","ap-northeast-2":"ami-4a21eb24","ap-southeast-1":"ami-99cc12fa","ap-southeast-2":"ami-c16450a2","us-east-1":"ami-3b2cbf2c"}}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+      output = subject.run(cmd)
+      expect(output.strip).to eq('{"result":"ami-83c8bef0","error":null,"log":""}')
+
+      cmd = '{"method":"create_vm","arguments":["c712902c-a3f0-4768-a392-13ed1389aff8","ami-83c8bef0",{"instance_type":"t2.micro","ephemeral_disk":{"size":3000,"type":"gp2"}},{"compilation":{"type":"dynamic","cloud_properties":{"meta":{"azure":{"dns":["10.0.16.2"],"subnet":"subnet-bb1884df"}}},"default":["dns","gateway"]}},[],{}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+      azure_cpi.returns('{"result":"i-0fce66f99336acfd3","error":null,"log":""}')
+      output = subject.run(cmd)
+      expect(output.strip).to eq('{"result":"i-0fce66f99336acfd3","error":null,"log":""}')
+
+      expect(JSON.parse(state_file.read)).to eq([
+        {"id" => "ami-83c8bef0", "type" => "stemcell", "cpi" => "azure"},
+        {"id" => "i-0fce66f99336acfd3", "type" => "vm", "cpi" => "azure"}
+      ])
+
+      cmd = '{"method":"set_vm_metadata","arguments":["i-0fce66f99336acfd3",{"director":"bosh-bosh-bosh","deployment":"red","id":"b9c2cd5c-7492-4d6d-a30b-ed987d24d307","job":"nothing","index":"0","name":"nothing/b9c2cd5c-7492-4d6d-a30b-ed987d24d307","created_at":"2016-08-16T00:17:16Z"}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+      azure_cpi.returns '{"result":null,"error":null,"log":""}'
+      output = subject.run(cmd)
+      expect(output.strip).to eq('{"result":null,"error":null,"log":""}')
+      expect(azure_cpi.called_with.strip).to eq(cmd)
+    end
+  end
+
+  context 'delete_vm' do
+    let(:azure_cpi) { MockExecutable.new('') }
+    let(:warden_cpi) { MockExecutable.new("") }
+    let(:available_cpis) { {azure: azure_cpi.path, warden: warden_cpi.path} }
+    after(:each) do
+      azure_cpi.cleanup
+    end
+
+    it 'assigns the dynamic network config for the cpi' do
+      azure_cpi.returns('{"result":"ami-83c8bef0","error":null,"log":""}')
+      cmd = '{"method":"create_stemcell","arguments":["/var/vcap/data/tmp/director/stemcell20160811-8042-j83kkx/image",{"name":"bosh-azure-xen-hvm-ubuntu-trusty-go_agent","version":"3262.5","infrastructure":"azure","hypervisor":"xen","disk":3072,"disk_format":"raw","container_format":"bare","os_type":"linux","os_distro":"ubuntu","architecture":"x86_64","root_device_name":"/dev/sda1","ami":{"eu-central-1":"ami-e16c9b8e","sa-east-1":"ami-b92eb9d5","ap-northeast-1":"ami-4e9f592f","us-west-1":"ami-eae7a78a","eu-west-1":"ami-636a0310","us-west-2":"ami-20559c40","ap-northeast-2":"ami-4a21eb24","ap-southeast-1":"ami-99cc12fa","ap-southeast-2":"ami-c16450a2","us-east-1":"ami-3b2cbf2c"}}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+      output = subject.run(cmd)
+      expect(output.strip).to eq('{"result":"ami-83c8bef0","error":null,"log":""}')
+
+      cmd = '{"method":"create_vm","arguments":["c712902c-a3f0-4768-a392-13ed1389aff8","ami-83c8bef0",{"instance_type":"t2.micro","ephemeral_disk":{"size":3000,"type":"gp2"}},{"compilation":{"type":"dynamic","cloud_properties":{"meta":{"azure":{"dns":["10.0.16.2"],"subnet":"subnet-bb1884df"}}},"default":["dns","gateway"]}},[],{}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+      azure_cpi.returns('{"result":"i-0fce66f99336acfd3","error":null,"log":""}')
+      output = subject.run(cmd)
+      expect(output.strip).to eq('{"result":"i-0fce66f99336acfd3","error":null,"log":""}')
+
+      expect(JSON.parse(state_file.read)).to eq([
+        {"id" => "ami-83c8bef0", "type" => "stemcell", "cpi" => "azure"},
+        {"id" => "i-0fce66f99336acfd3", "type" => "vm", "cpi" => "azure"}
+      ])
+
+      cmd = '{"method":"delete_vm","arguments":["i-0fce66f99336acfd3"],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+      azure_cpi.returns '{"result":true,"error":null,"log":""}'
+      output = subject.run(cmd)
+      expect(output.strip).to eq('{"result":true,"error":null,"log":""}')
+      expect(azure_cpi.called_with.strip).to eq(cmd)
     end
   end
   # {"method":"set_vm_metadata","arguments":["i-016ba2cc5c6429f8c",{"director":"bosh-bosh-bosh","deployment":"red","id":"b9c2cd5c-7492-4d6d-a30b-ed987d24d307","job":"nothing","index":"0","name":"nothing/b9c2cd5c-7492-4d6d-a30b-ed987d24d307","created_at":"2016-08-16T00:17:16Z"}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}

@@ -35,6 +35,26 @@ class MetaCPI
     output
   end
 
+  def set_vm_metadata(parameters, input)
+    vm = parameters[0]
+    cloud_id = @repository.find(vm, CloudIDType::VM)
+    if cloud_id.nil?
+      raise MetaError.new("meta cpi dosen't know about vm #{vm}")
+    end
+    cpi = cloud_id["cpi"].to_sym
+    output = exec_with_cpi(cpi_for(cpi), input)
+  end
+
+  def delete_vm(parameters, input)
+    vm = parameters[0]
+    cloud_id = @repository.find(vm, CloudIDType::VM)
+    if cloud_id.nil?
+      raise MetaError.new("meta cpi dosen't know about vm #{vm}")
+    end
+    cpi = cloud_id["cpi"].to_sym
+    output = exec_with_cpi(cpi_for(cpi), input)
+  end
+
   def delete_stemcell(parameters, input)
     stemcell = parameters[0]
     cloud_id = @repository.find(stemcell, CloudIDType::STEMCELL)
