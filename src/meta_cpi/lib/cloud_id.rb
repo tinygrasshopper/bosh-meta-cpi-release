@@ -2,8 +2,9 @@ require 'timeout'
 require 'json'
 
 class CloudIDRepository
-  def initialize(filename)
-    @filename = filename
+  def initialize(datafile, lockfile)
+    @datafile = datafile
+    @lockfile = lockfile
   end
 
   def append(cloud_id)
@@ -14,12 +15,12 @@ class CloudIDRepository
   end
 
   def find(id, type)
-    cloud_id = {}
+    cloud_id = nil
     safely_mutate_state do |cloud_ids|
       cloud_ids.each do |current|
-        cloud_id = current if current["id"] == id and current["type"] == type
+        cloud_id = current if current["id"] == id and current["type"] == type.to_s
       end
-      contents
+      cloud_ids
     end
     cloud_id
   end
@@ -28,22 +29,21 @@ class CloudIDRepository
 
   #This is totally unsafe
   def safely_mutate_state
-    File.open(@filename, File::RDWR|File::CREAT, 0644) do |file|
-      Timeout::timeout(1) { file.flock(File::LOCK_EX) }
-      content = file.read
-      input = if content.empty?
-        []
+    File.open(@lockfile, File::RDWR|File::CREAT, 0644) do |lock|
+      Timeout::timeout(2) { lock.flock(File::LOCK_EX) }
+      input = if File.exists?(@datafile)
+        contents = File.read(@datafile)
+        contents.strip.empty? ? [] : JSON.parse(contents)
       else
-        JSON.parse(content)
+        []
       end
       output = yield input
-      file.truncate(0)
-      file.write(output.to_json)
+      File.write(@datafile, output.to_json)
     end
   end
 end
 
 module CloudIDType
   STEMCELL = :stemcell
-  INSTANCE = :instance
+  VM = :vm
 end
