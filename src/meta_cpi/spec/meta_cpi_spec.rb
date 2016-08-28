@@ -86,7 +86,7 @@ describe MetaCPI do
   context 'create_vm' do
     context 'networks' do
       let(:aws_cpi) { MockExecutable.new('') }
-      let(:warden_cpi) { MockExecutable.new(warden_cpi_output) }
+      let(:warden_cpi) { MockExecutable.new("") }
       let(:available_cpis) { {aws: aws_cpi.path, warden: warden_cpi.path} }
       after(:each) do
         aws_cpi.cleanup
@@ -139,18 +139,27 @@ describe MetaCPI do
   # {"method":"delete_stemcell","arguments":["ami-83c8bef0"],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}
   # {"method":"delete_vm","arguments":["i-0f50317068e88a9e1"],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}
   context 'delete stemcells' do
-    context 'calls the default_cpi' do
-      let(:aws_cpi) { MockExecutable.new("aws_cpi_output") }
-      let(:available_cpis) { {aws: aws_cpi.path} }
+    context 'calls the cpi recorded' do
+      let(:aws_cpi) { MockExecutable.new("") }
+      let(:warden_cpi) { MockExecutable.new("") }
+      let(:available_cpis) { {warden: warden_cpi.path,aws: aws_cpi.path, } }
       after(:each) do
         aws_cpi.cleanup
+        warden_cpi.cleanup
       end
       it 'returns an error' do
-        cmd = '{"method":"delete_vm","arguments":["i-01991d265a8cff981"],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+        warden_cpi.returns('{"result":"ami-83c8bef0","error":null,"log":""}')
+        cmd = '{"method":"create_stemcell","arguments":["/var/vcap/data/tmp/director/stemcell20160811-8042-j83kkx/image",{"name":"bosh-aws-xen-hvm-ubuntu-trusty-go_agent","version":"3262.5","infrastructure":"warden","hypervisor":"xen","disk":3072,"disk_format":"raw","container_format":"bare","os_type":"linux","os_distro":"ubuntu","architecture":"x86_64","root_device_name":"/dev/sda1","ami":{"eu-central-1":"ami-e16c9b8e","sa-east-1":"ami-b92eb9d5","ap-northeast-1":"ami-4e9f592f","us-west-1":"ami-eae7a78a","eu-west-1":"ami-636a0310","us-west-2":"ami-20559c40","ap-northeast-2":"ami-4a21eb24","ap-southeast-1":"ami-99cc12fa","ap-southeast-2":"ami-c16450a2","us-east-1":"ami-3b2cbf2c"}}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+        output = subject.run(cmd)
+        expect(output.strip).to eq('{"result":"ami-83c8bef0","error":null,"log":""}')
+        expect(JSON.parse(state_file.read)).to eq([{"id" => "ami-83c8bef0", "type" => "stemcell", "cpi" => "warden"}])
+
+        warden_cpi.returns '{"result":true,"error":null,"log":""}'
+        cmd = '{"method":"delete_stemcell","arguments":["ami-83c8bef0"],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
         output = subject.run(cmd)
 
-        expect(aws_cpi.called_with.strip).to eq(cmd)
-        expect(output.strip).to eq('aws_cpi_output')
+        expect(output.strip).to eq('{"result":true,"error":null,"log":""}')
+        expect(warden_cpi.called_with.strip).to eq(cmd)
       end
     end
   end
