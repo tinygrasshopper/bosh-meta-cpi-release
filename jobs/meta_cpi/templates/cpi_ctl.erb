@@ -3,6 +3,8 @@
 set -e
 
 RUN_DIR=/var/vcap/sys/run/meta_cpi
+LOG_DIR=/var/vcap/sys/log/meta_cpi
+DATA_DIR=/var/vcap/store/meta_cpi
 PID_FILE=${RUN_DIR}/cpi.pid
 
 case $1 in
@@ -10,6 +12,12 @@ case $1 in
   start)
     mkdir -p $RUN_DIR
     echo 1 > $PID_FILE
+
+    mkdir -p $LOG_DIR
+    chown -R vcap:vcap $LOG_DIR
+
+    mkdir -p $DATA_DIR
+    chown -R vcap:vcap $DATA_DIR
   ;;
 
   stop)
