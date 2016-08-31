@@ -113,6 +113,7 @@ class MetaCPI
   def inject_networks_from_meta_config(input,cpi)
     networks = input["arguments"][3]
     networks.each do |name, network|
+      next unless network["cloud_properties"]["meta"]
       config_for_cpi = network["cloud_properties"]["meta"][cpi.to_s]
       if config_for_cpi
         network["dns"] = config_for_cpi["dns"] if config_for_cpi["dns"]

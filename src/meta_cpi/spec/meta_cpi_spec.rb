@@ -132,6 +132,33 @@ describe MetaCPI do
           {"id" => "i-0fce66f99336acfd3", "type" => "vm", "cpi" => "azure"}
         ])
       end
+
+      it 'calls the cpi directly when no "meta" block given' do
+        azure_cpi.returns('{"result":"ami-83c8bef0","error":null,"log":""}')
+        cmd = '{"method":"create_stemcell","arguments":["/var/vcap/data/tmp/director/stemcell20160811-8042-j83kkx/image",{"name":"bosh-azure-xen-hvm-ubuntu-trusty-go_agent","version":"3262.5","infrastructure":"azure","hypervisor":"xen","disk":3072,"disk_format":"raw","container_format":"bare","os_type":"linux","os_distro":"ubuntu","architecture":"x86_64","root_device_name":"/dev/sda1","ami":{"eu-central-1":"ami-e16c9b8e","sa-east-1":"ami-b92eb9d5","ap-northeast-1":"ami-4e9f592f","us-west-1":"ami-eae7a78a","eu-west-1":"ami-636a0310","us-west-2":"ami-20559c40","ap-northeast-2":"ami-4a21eb24","ap-southeast-1":"ami-99cc12fa","ap-southeast-2":"ami-c16450a2","us-east-1":"ami-3b2cbf2c"}}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
+        output = subject.run(cmd)
+        expect(output.strip).to eq('{"result":"ami-83c8bef0","error":null,"log":""}')
+
+        cmd = '{"method":"create_vm","arguments":["e1471ee4-c4e4-42f0-a77d-3a9219289ac4","ami-83c8bef0",{"instance_type":"t2.micro","availability_zone":"eu-west-1a","ephemeral_disk":{"size":3000,"type":"gp2"}},{"private":{"ip":"10.0.16.201","netmask":"255.255.240.0","cloud_properties":{"subnet":"subnet-bb1884df"},"default":["dns","gateway"],"dns":["10.0.16.2"],"gateway":"10.0.16.1"}},[],{}],"context":{"director_uuid":"a04ed639-977f-4680-8f87-48ccc9bb50b6"}}'
+        azure_cpi.returns('{"result":"i-0fce66f99336acfd3","error":null,"log":""}')
+
+        output = subject.run(cmd)
+        expect(output.strip).to eq('{"result":"i-0fce66f99336acfd3","error":null,"log":""}')
+        expect(azure_cpi.called_with.strip).to eq('{"method":"create_vm","arguments":["e1471ee4-c4e4-42f0-a77d-3a9219289ac4","ami-83c8bef0",{"instance_type":"t2.micro","availability_zone":"eu-west-1a","ephemeral_disk":{"size":3000,"type":"gp2"}},{"private":{"ip":"10.0.16.201","netmask":"255.255.240.0","cloud_properties":{"subnet":"subnet-bb1884df"},"default":["dns","gateway"],"dns":["10.0.16.2"],"gateway":"10.0.16.1"}},[],{}],"context":{"director_uuid":"a04ed639-977f-4680-8f87-48ccc9bb50b6"}}')
+
+        expect(JSON.parse(state_file.read)).to eq([
+          {"id" => "ami-83c8bef0", "type" => "stemcell", "cpi" => "azure"},
+          {"id" => "i-0fce66f99336acfd3", "type" => "vm", "cpi" => "azure"}
+        ])
+      end
+
+      it 'assigns the dynamic disk config for the cpi' do
+
+      end
+
+      it 'calls the cpi direc when no "meta" block given' do
+        # {"method":"create_vm","arguments":["e1471ee4-c4e4-42f0-a77d-3a9219289ac4","ami-511d6e22",{"instance_type":"t2.micro","availability_zone":"eu-west-1a","ephemeral_disk":{"size":3000,"type":"gp2"}},{"private":{"ip":"10.0.16.201","netmask":"255.255.240.0","cloud_properties":{"subnet":"subnet-bb1884df"},"default":["dns","gateway"],"dns":["10.0.16.2"],"gateway":"10.0.16.1"}},[],{}],"context":{"director_uuid":"a04ed639-977f-4680-8f87-48ccc9bb50b6"}}
+      end
     end
   end
   context 'set_vm_metadata' do
@@ -197,9 +224,7 @@ describe MetaCPI do
       expect(azure_cpi.called_with.strip).to eq(cmd)
     end
   end
-  # {"method":"set_vm_metadata","arguments":["i-016ba2cc5c6429f8c",{"director":"bosh-bosh-bosh","deployment":"red","id":"b9c2cd5c-7492-4d6d-a30b-ed987d24d307","job":"nothing","index":"0","name":"nothing/b9c2cd5c-7492-4d6d-a30b-ed987d24d307","created_at":"2016-08-16T00:17:16Z"}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}
-  # {"method":"delete_stemcell","arguments":["ami-83c8bef0"],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}
-  # {"method":"delete_vm","arguments":["i-0f50317068e88a9e1"],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}
+
   context 'delete stemcells' do
     context 'calls the cpi recorded' do
       let(:aws_cpi) { MockExecutable.new("") }
