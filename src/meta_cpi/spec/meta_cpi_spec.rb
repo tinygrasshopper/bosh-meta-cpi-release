@@ -158,12 +158,12 @@ describe MetaCPI do
         output = subject.run(cmd)
         expect(output.strip).to eq('{"result":"ami-83c8bef0","error":null,"log":""}')
 
-        cmd = '{"method":"create_vm","arguments":["e1471ee4-c4e4-42f0-a77d-3a9219289ac4","ami-83c8bef0",{"instance_type":"t2.micro","availability_zone":"eu-west-1a","ephemeral_disk":{"size":3000,"type":"gp2"}},{"private":{"ip":"10.0.16.201","netmask":"255.255.240.0","cloud_properties":{"subnet":"subnet-bb1884df"},"default":["dns","gateway"],"dns":["10.0.16.2"],"gateway":"10.0.16.1"}},[],{}],"context":{"director_uuid":"a04ed639-977f-4680-8f87-48ccc9bb50b6"}}'
+        cmd = '{"method":"create_vm","arguments":["e1471ee4-c4e4-42f0-a77d-3a9219289ac4","ami-83c8bef0",{"meta":{"azure":{"instance_type":"t2.micro","availability_zone":"eu-west-1a","ephemeral_disk":{"size":3000,"type":"gp2"}}}},{"private":{"ip":"10.0.16.201","netmask":"255.255.240.0","cloud_properties":{"subnet":"subnet-bb1884df"},"default":["dns","gateway"],"dns":["10.0.16.2"],"gateway":"10.0.16.1"}},[],{}],"context":{"director_uuid":"a04ed639-977f-4680-8f87-48ccc9bb50b6"}}'
         azure_cpi.returns('{"result":"i-0fce66f99336acfd3","error":null,"log":""}')
 
         output = subject.run(cmd)
         expect(output.strip).to eq('{"result":"i-0fce66f99336acfd3","error":null,"log":""}')
-        expect(azure_cpi.called_with.strip).to eq('{"method":"create_vm","arguments":["e1471ee4-c4e4-42f0-a77d-3a9219289ac4","ami-83c8bef0",{"instance_type":"t2.micro","availability_zone":"eu-west-1a","ephemeral_disk":{"size":3000,"type":"gp2"}},{"private":{"ip":"10.0.16.201","netmask":"255.255.240.0","cloud_properties":{"subnet":"subnet-bb1884df"},"default":["dns","gateway"],"dns":["10.0.16.2"],"gateway":"10.0.16.1"}},[],{}],"context":{"director_uuid":"a04ed639-977f-4680-8f87-48ccc9bb50b6"}}')
+        expect(JSON.parse(azure_cpi.called_with)).to eq(JSON.parse('{"method":"create_vm","arguments":["e1471ee4-c4e4-42f0-a77d-3a9219289ac4","ami-83c8bef0",{"instance_type":"t2.micro","availability_zone":"eu-west-1a","ephemeral_disk":{"size":3000,"type":"gp2"}, "meta":{"azure":{"instance_type":"t2.micro","availability_zone":"eu-west-1a","ephemeral_disk":{"size":3000,"type":"gp2"}}}},{"private":{"ip":"10.0.16.201","netmask":"255.255.240.0","cloud_properties":{"subnet":"subnet-bb1884df"},"default":["dns","gateway"],"dns":["10.0.16.2"],"gateway":"10.0.16.1"}},[],{}],"context":{"director_uuid":"a04ed639-977f-4680-8f87-48ccc9bb50b6"}}'))
 
         expect(JSON.parse(state_file.read)).to eq([
           {"id" => "ami-83c8bef0", "type" => "stemcell", "cpi" => "azure"},

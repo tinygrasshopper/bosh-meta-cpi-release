@@ -74,6 +74,7 @@ class MetaCPI
     cpi = cloud_id["cpi"].to_sym
     input_json = JSON.parse(input)
     modified_input = inject_networks_from_meta_config(input_json,cpi)
+    modified_input = inject_vm_config_from_meta_config(modified_input, cpi)
     output = exec_with_cpi(cpi_for(cpi), modified_input.to_json)
     parsed_json = JSON.parse(output)
     if parsed_json["error"].nil?
@@ -119,6 +120,16 @@ class MetaCPI
         network["dns"] = config_for_cpi["dns"] if config_for_cpi["dns"]
         network["cloud_properties"].merge!(config_for_cpi)
       end
+    end
+    input
+  end
+
+  def inject_vm_config_from_meta_config(input,cpi)
+    instance_config = input["arguments"][2]
+    return input unless instance_config["meta"]
+    config_for_cpi = instance_config["meta"][cpi.to_s]
+    if config_for_cpi
+      instance_config.merge!(config_for_cpi)
     end
     input
   end
