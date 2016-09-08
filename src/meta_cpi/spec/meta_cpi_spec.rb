@@ -7,7 +7,7 @@ describe MetaCPI do
   let(:default_cpi) { :aws }
 
 
-  subject { MetaCPI.new(log_file: log_file.path, default_cpi: default_cpi, available_cpis: available_cpis, state_file: state_file.path, lock_file: lock_file.path) }
+  subject { MetaCPI.new("log_file" => log_file.path, "default_cpi" => default_cpi, "available_cpis" => available_cpis, "state_file" => state_file.path, "lock_file" => lock_file.path) }
 
   after(:each) do
     log_file.unlink
@@ -17,7 +17,7 @@ describe MetaCPI do
   context 'upload stemcells' do
     context 'aws stemcell' do
       let(:aws_cpi) { MockExecutable.new('{"result":"c3be6b65-3b01-4d22-77df-5cce09aa3d0c","error":null,"log":""}') }
-      let(:available_cpis) { {aws: aws_cpi.path} }
+      let(:available_cpis) { {"aws" => aws_cpi.path} }
       after(:each) do
         aws_cpi.cleanup
       end
@@ -39,7 +39,7 @@ describe MetaCPI do
 
     context "error uploading stemcell" do
       let(:aws_cpi) { MockExecutable.new('{"result":"c3be6b65-3b01-4d22-77df-5cce09aa3d0c","error":"some error","log":""}') }
-      let(:available_cpis) { {aws: aws_cpi.path} }
+      let(:available_cpis) { {"aws"=> aws_cpi.path} }
 
       it "dosen't save the id" do
         cmd = '{"method":"create_stemcell","arguments":["/var/vcap/data/tmp/director/stemcell20160811-8042-j83kkx/image",{"name":"bosh-aws-xen-hvm-ubuntu-trusty-go_agent","version":"3262.5","infrastructure":"aws","hypervisor":"xen","disk":3072,"disk_format":"raw","container_format":"bare","os_type":"linux","os_distro":"ubuntu","architecture":"x86_64","root_device_name":"/dev/sda1","ami":{"eu-central-1":"ami-e16c9b8e","sa-east-1":"ami-b92eb9d5","ap-northeast-1":"ami-4e9f592f","us-west-1":"ami-eae7a78a","eu-west-1":"ami-636a0310","us-west-2":"ami-20559c40","ap-northeast-2":"ami-4a21eb24","ap-southeast-1":"ami-99cc12fa","ap-southeast-2":"ami-c16450a2","us-east-1":"ami-3b2cbf2c"}}],"context":{"director_uuid":"a5124231-2459-4774-b27e-3c45d3d5bb49"}}'
@@ -54,7 +54,7 @@ describe MetaCPI do
       let(:warden_cpi_output){'{"result":"i-0fce66f99336acfd3","error":null,"log":""}'}
       let(:aws_cpi) { MockExecutable.new("aws_cpi_output") }
       let(:warden_cpi) { MockExecutable.new(warden_cpi_output) }
-      let(:available_cpis) { {aws: aws_cpi.path, warden: warden_cpi.path} }
+      let(:available_cpis) { {"aws"=> aws_cpi.path, "warden" => warden_cpi.path} }
       after(:each) do
         aws_cpi.cleanup
         warden_cpi.cleanup
@@ -70,7 +70,7 @@ describe MetaCPI do
 
     context 'cpi not provided' do
       let(:aws_cpi) { MockExecutable.new("aws_cpi_output") }
-      let(:available_cpis) { {aws: aws_cpi.path} }
+      let(:available_cpis) { {"aws"=> aws_cpi.path} }
       after(:each) do
         aws_cpi.cleanup
       end
@@ -87,7 +87,7 @@ describe MetaCPI do
     context 'networks' do
       let(:azure_cpi) { MockExecutable.new('') }
       let(:warden_cpi) { MockExecutable.new("") }
-      let(:available_cpis) { {azure: azure_cpi.path, warden: warden_cpi.path} }
+      let(:available_cpis) { {"azure" => azure_cpi.path, "warden" => warden_cpi.path} }
       after(:each) do
         azure_cpi.cleanup
       end
@@ -194,7 +194,7 @@ describe MetaCPI do
   context 'set_vm_metadata' do
     let(:azure_cpi) { MockExecutable.new('') }
     let(:warden_cpi) { MockExecutable.new("") }
-    let(:available_cpis) { {azure: azure_cpi.path, warden: warden_cpi.path} }
+    let(:available_cpis) { {"azure" => azure_cpi.path, "warden" => warden_cpi.path} }
     after(:each) do
       azure_cpi.cleanup
     end
@@ -226,7 +226,7 @@ describe MetaCPI do
   context 'delete_vm' do
     let(:azure_cpi) { MockExecutable.new('') }
     let(:warden_cpi) { MockExecutable.new("") }
-    let(:available_cpis) { {azure: azure_cpi.path, warden: warden_cpi.path} }
+    let(:available_cpis) { {"azure" => azure_cpi.path, "warden" => warden_cpi.path} }
     after(:each) do
       azure_cpi.cleanup
     end
@@ -259,7 +259,7 @@ describe MetaCPI do
     context 'calls the cpi recorded' do
       let(:aws_cpi) { MockExecutable.new("") }
       let(:warden_cpi) { MockExecutable.new("") }
-      let(:available_cpis) { {warden: warden_cpi.path,aws: aws_cpi.path, } }
+      let(:available_cpis) { {"warden" => warden_cpi.path,"aws"=> aws_cpi.path, } }
       after(:each) do
         aws_cpi.cleanup
         warden_cpi.cleanup

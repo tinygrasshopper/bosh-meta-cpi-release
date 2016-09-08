@@ -3,13 +3,13 @@ require 'json'
 class MetaCPI
   def initialize(params)
     @params = params
-    @repository = CloudIDRepository.new(params[:state_file], params[:lock_file])
+    @repository = CloudIDRepository.new(params["state_file"], params["lock_file"])
   end
 
   def run(input)
     log "META INPUT: #{input}"
     cpi_request = JSON.parse(input)
-    method = cpi_request["method"].to_sym
+    method = cpi_request["method"]
     parameters = cpi_request["arguments"]
     output = if self.respond_to?(method, true)
       self.send(method, parameters, input)
@@ -26,7 +26,7 @@ class MetaCPI
   private
 
   def create_stemcell(parameters, input)
-    cpi = parameters[1]["infrastructure"].to_sym
+    cpi = parameters[1]["infrastructure"]
     output = exec_with_cpi(cpi_for(cpi), input)
     parsed_json = JSON.parse(output)
     if parsed_json["error"].nil?
@@ -41,7 +41,7 @@ class MetaCPI
     if cloud_id.nil?
       raise MetaError.new("meta cpi dosen't know about vm #{vm}")
     end
-    cpi = cloud_id["cpi"].to_sym
+    cpi = cloud_id["cpi"]
     output = exec_with_cpi(cpi_for(cpi), input)
   end
 
@@ -51,7 +51,7 @@ class MetaCPI
     if cloud_id.nil?
       raise MetaError.new("meta cpi dosen't know about vm #{vm}")
     end
-    cpi = cloud_id["cpi"].to_sym
+    cpi = cloud_id["cpi"]
     output = exec_with_cpi(cpi_for(cpi), input)
   end
 
@@ -61,7 +61,7 @@ class MetaCPI
     if cloud_id.nil?
       raise MetaError.new("meta cpi dosen't know about stemcell #{stemcell}")
     end
-    cpi = cloud_id["cpi"].to_sym
+    cpi = cloud_id["cpi"]
     output = exec_with_cpi(cpi_for(cpi), input)
   end
 
@@ -71,7 +71,7 @@ class MetaCPI
     if cloud_id.nil?
       raise MetaError.new("meta cpi dosen't know about stemcell #{stemcell}")
     end
-    cpi = cloud_id["cpi"].to_sym
+    cpi = cloud_id["cpi"]
     input_json = JSON.parse(input)
     modified_input = inject_networks_from_meta_config(input_json,cpi)
     modified_input = inject_vm_config_from_meta_config(modified_input, cpi)
@@ -84,14 +84,14 @@ class MetaCPI
   end
 
   def default_cpi
-    cpi_for(@params[:default_cpi])
+    cpi_for(@params["default_cpi"])
   end
 
   def cpi_for(name)
-    if @params[:available_cpis][name].nil?
+    if @params["available_cpis"][name].nil?
       raise MetaError.new("unknown cpi #{name}")
     else
-      @params[:available_cpis][name]
+      @params["available_cpis"][name]
     end
   end
 
@@ -108,7 +108,7 @@ class MetaCPI
   end
 
   def log_file
-    @params[:log_file]
+    @params["log_file"]
   end
 
   def inject_networks_from_meta_config(input,cpi)
