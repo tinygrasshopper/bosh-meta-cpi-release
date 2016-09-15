@@ -11,4 +11,4 @@ bundle_cmd="$BOSH_PACKAGES_DIR/ruby_for_meta_cpi/bin/bundle"
 export BUNDLE_CACHE_PATH="vendor/package"
 export PATH=$PATH:$BOSH_PACKAGES_DIR/ruby_for_meta_cpi/bin
 
-$bundle_cmd exec $BOSH_PACKAGES_DIR/meta_cpi/bin/meta_cpi
+$bundle_cmd exec $BOSH_PACKAGES_DIR/meta_cpi/bin/meta_cpi $BOSH_JOBS_DIR/meta_cpi/config/config.json

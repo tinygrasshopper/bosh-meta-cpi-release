@@ -3,10 +3,22 @@ name: meta_cpi
 templates:
   cpi_ctl.erb: bin/cpi_ctl
   cpi.erb: bin/cpi
+  config.json.erb: config/config.json
 
 packages:
 - meta_cpi
 - ruby_for_meta_cpi
 
 
-properties: {}
+properties:
+  meta.default_cpi:
+    description: default cpi
+    default: aws
+  meta.state_file:
+    description: meta state file
+    default: /var/vcap/store/meta_cpi/state.json
+  meta.lock_file:
+    description: lock file for meta cpi
+    default: /var/vcap/store/meta_cpi/lock
+  meta.available_cpis:
+    description: location of available cpi's

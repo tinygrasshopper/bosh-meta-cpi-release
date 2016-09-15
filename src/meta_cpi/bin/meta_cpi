@@ -9,15 +9,10 @@ require 'fileutils'
 require 'meta_error'
 require 'cloud_id'
 require 'meta_cpi'
+require 'json'
 
 FileUtils.mkdir_p '/var/vcap/store/meta_cpi'
 
-cpi = MetaCPI.new(log_file: '/tmp/meta.log',
-                  default_cpi: :aws,
-                  state_file: '/var/vcap/store/meta_cpi/state.json',
-                  lock_file: '/var/vcap/store/meta_cpi/lock',
-                  available_cpis: {
-                    aws: '/var/vcap/jobs/aws_cpi/bin/cpi',
-                    warden: '/var/vcap/jobs/warden_cpi/bin/cpi',
-                  })
+params = JSON.parse(File.read(ARGV.first))
+cpi = MetaCPI.new(params)
 puts cpi.run(STDIN.read)
