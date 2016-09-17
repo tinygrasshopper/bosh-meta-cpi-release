@@ -1,0 +1,6 @@
+language: ruby
+rvm:
+ - 2.3.0
+
+before_script: cd src/meta_cpi
+script: bundle exec rspec spec
