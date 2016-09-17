@@ -14,6 +14,9 @@ properties:
   meta.default_cpi:
     description: default cpi
     default: aws
+  meta.log_file:
+    description: log file
+    default: /var/vcap/sys/log/meta_cpi/meta.log
   meta.state_file:
     description: meta state file
     default: /var/vcap/store/meta_cpi/state.json
