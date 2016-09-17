@@ -4,4 +4,4 @@ rvm:
 
 before_script: cd src/meta_cpi
 
-script: bundle exec rspec spec
+script: bundle install && bundle exec rspec spec
