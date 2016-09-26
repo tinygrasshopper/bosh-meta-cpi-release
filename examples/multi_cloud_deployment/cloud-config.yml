@@ -31,7 +31,7 @@ networks:
   - range: 10.3.0.0/24
     gateway: 10.3.0.1
     reserved: [10.3.0.1-10.3.0.5]
-    dns: [168.63.129.16, 8.8.8.8]
+    dns: [<public-ip>, 8.8.8.8]
     cloud_properties:
       virtual_network_name: azureVnet
       subnet_name: Subnet1
@@ -46,7 +46,7 @@ networks:
         subnet: subnet-51a3d735
       azure:
         virtual_network_name: azureVnet
-        dns: [168.63.129.16, 8.8.8.8]
+        dns: [<public-ip>, 8.8.8.8]
         subnet_name: Subnet1
 
 
