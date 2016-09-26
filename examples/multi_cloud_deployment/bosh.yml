@@ -1,0 +1,155 @@
+---
+name: meta-bosh
+director_uuid: e49e8a98-be16-4547-b5e4-a412c588630a
+
+releases:
+- name: bosh
+  version: latest
+- name: bosh-aws-cpi
+  version: latest
+- name: bosh-azure-cpi
+  version: latest
+- name: meta-cpi
+  version: latest
+
+resource_pools:
+- name: vms
+  network: private
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: latest
+  cloud_properties:
+    instance_type: m3.xlarge
+    ephemeral_disk: {size: 250_000, type: gp2}
+    availability_zone: eu-west-1a
+
+disk_pools:
+- name: disks
+  disk_size: 20_000
+  cloud_properties: {type: gp2}
+
+networks:
+- name: private
+  type: manual
+  subnets:
+  - range: 10.0.0.0/24
+    gateway: 10.0.0.1
+    reserved: [10.0.0.1, 10.0.0.2, 10.0.0.3, 10.0.0.243, 10.0.0.6]
+    static: [10.0.0.12]
+    dns: [10.0.0.2]
+    cloud_properties: {subnet: subnet-51a3d735}
+- name: public
+  type: vip
+
+
+jobs:
+- name: bosh
+  instances: 1
+  resource_pool: vms
+  persistent_disk_pool: disks
+  stemcell: trusty
+  networks:
+  - name: private
+    static_ips: [10.0.0.12]
+    default: [dns, gateway]
+  - name: public
+    static_ips: [52.210.139.84]
+
+  templates:
+  - {name: nats, release: bosh}
+  - {name: blobstore, release: bosh}
+  - {name: postgres, release: bosh}
+  - {name: director, release: bosh}
+  - {name: health_monitor, release: bosh}
+  - {name: registry, release: bosh}
+  - {name: aws_cpi, release: bosh-aws-cpi}
+  - {name: azure_cpi, release: bosh-azure-cpi}
+  - {name: meta_cpi, release: meta-cpi}
+
+
+compilation:
+  workers: 10
+  network: private
+  reuse_compilation_vms: true
+  cloud_properties:
+    instance_type: m3.large
+    availability_zone: eu-west-1a
+
+properties:
+  nats:
+    address: 127.0.0.1
+    user: nats
+    password: nats-password
+
+  postgres: &db
+    listen_address: 127.0.0.1
+    host: 127.0.0.1
+    user: postgres
+    password: postgres-password
+    database: bosh
+    adapter: postgres
+
+  registry:
+    address: 10.0.0.12
+    host: 10.0.0.12
+    db: *db
+    http: {user: admin, password: admin, port: 25777}
+    username: admin
+    password: admin
+    port: 25777
+
+  blobstore:
+    address: 10.0.0.12
+    port: 25250
+    provider: dav
+    director: {user: director, password: director-password}
+    agent: {user: agent, password: agent-password}
+
+  director:
+    address: 127.0.0.1
+    name: meta-aws-azure-bosh
+    db: *db
+    cpi_job: meta_cpi
+    max_threads: 10
+    user_management:
+      provider: local
+      local:
+        users:
+        - {name: admin, password: admin}
+        - {name: hm, password: hm-password}
+
+  hm:
+    director_account: {user: hm, password: hm-password}
+    resurrector_enabled: true
+  meta:
+    available_cpis:
+      aws: /var/vcap/jobs/aws_cpi/bin/cpi
+      azure: /var/vcap/jobs/azure_cpi/bin/cpi
+  aws: &aws
+    access_key_id: <replace-with-aws-key-id>
+    secret_access_key: <replace-with-aws-access-key>
+    default_key_name: bosh
+    default_security_groups: [bosh]
+    region: eu-west-1
+
+  azure: &azure
+    environment: AzureCloud
+    subscription_id: <replace-with-subscription-id>
+    storage_account_name: <replace-with-storage-account-name>
+    resource_group_name: <replace-with-resource-group>
+    tenant_id: <replace-with-tenant-id>
+    client_id: <replace-with-client-id>
+    client_secret: <replace-with-client-secret>
+    ssh_user: vcap
+    ssh_public_key: <replace-with-public-key>
+    default_security_group: nsg-bosh
+
+  agent: {mbus: "nats://nats:nats-password@10.0.0.12:4222"}
+
+  ntp: &ntp [0.pool.ntp.org, 1.pool.ntp.org]
+
+update:
+  canaries: 1
+  max_in_flight: 1
+  canary_watch_time: 5000 - 600000
+  update_watch_time: 5000 - 600000
