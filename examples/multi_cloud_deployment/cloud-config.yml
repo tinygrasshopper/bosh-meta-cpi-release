@@ -1,0 +1,65 @@
+---
+vm_types:
+- name: small
+  cloud_properties:
+    meta:
+      aws:
+        instance_type: t2.micro
+        availability_zone: eu-west-1a
+        ephemeral_disk: {size: 3000, type: gp2}
+      azure:
+        instance_type: Standard_D2
+
+networks:
+- name: public
+  type: vip
+- name: azure_public
+  type: vip
+  cloud_properties:
+    resource_group_name: aws2azure
+- name: aws_network
+  type: manual
+  subnets:
+  - range: 10.0.0.0/20
+    reserved: [10.0.0.1-10.0.0.200]
+    gateway: 10.0.0.1
+    dns: [10.0.0.2]
+    cloud_properties: {subnet: subnet-51a3d735}
+- name: azure_network
+  type: manual
+  subnets:
+  - range: 10.3.0.0/24
+    gateway: 10.3.0.1
+    reserved: [10.3.0.1-10.3.0.5]
+    dns: [168.63.129.16, 8.8.8.8]
+    cloud_properties:
+      virtual_network_name: azureVnet
+      subnet_name: Subnet1
+
+- name: dyn
+  type: dynamic
+  cloud_properties:
+    meta:
+      warden: {}
+      aws:
+        dns: [10.0.0.2, 8.8.8.8]
+        subnet: subnet-51a3d735
+      azure:
+        virtual_network_name: azureVnet
+        dns: [168.63.129.16, 8.8.8.8]
+        subnet_name: Subnet1
+
+
+disk_types:
+- name: ten
+  disk_size: 10_000
+  cloud_properties: {}
+- name: one
+  disk_size: 1_000
+  cloud_properties: {}
+
+compilation:
+  workers: 30
+  reuse_compilation_vms: true
+  network: dyn
+  vm_type: small
