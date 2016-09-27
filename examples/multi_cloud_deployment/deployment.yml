@@ -1,0 +1,48 @@
+---
+name: what-my-location
+director_uuid: 3d969c03-8569-4ebd-8b0c-096720e6f26a
+
+stemcells:
+- alias: trusty_aws
+  name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+  version: latest
+- alias: trusty_azure
+  name: bosh-azure-hyperv-ubuntu-trusty-go_agent
+  version: latest
+
+releases:
+- name: current-location
+  version: latest
+
+jobs:
+- name: location_azure
+  instances: 1
+  templates:
+  - {name: location_server, release: current-location}
+  vm_type: small
+  stemcell: trusty_azure
+  networks:
+  - name: azure_network
+    default: [dns, gateway]
+  - name: azure_public
+    static_ips: [<AZURE-IP>]
+
+- name: location_aws
+  instances: 1
+  templates:
+  - {name: location_server, release: current-location}
+  vm_type: small
+  stemcell: trusty_aws
+  networks:
+  - name: aws_network
+    default: [dns, gateway]
+  - name: public
+    static_ips: [<AWS-IP>]
+
+update:
+  canaries: 1
+  canary_watch_time: 30000-300000
+  update_watch_time: 30000-300000
+  max_in_flight: 1
+  max_errors: 2
+  serial: false
